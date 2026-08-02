@@ -1,4 +1,4 @@
-# apple-automation-mock-tests
+# Voice-Assistant-Automation-Mock-Test
 # 🧪 Swift Assistant & Media Integration Test Harness
 
 [![Swift](https://img.shields.io/badge/Swift-5.9+-FA7343?style=flat&logo=swift&logoColor=white)](https://swift.org)
