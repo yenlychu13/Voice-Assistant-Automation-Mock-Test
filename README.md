@@ -1,67 +1,38 @@
-# Voice-Assistant-Automation-Mock-Test
-# 🧪 Swift Assistant & Media Integration Test Harness
+# 🎙️ Voice Assistant Integration Test Architecture
 
-[![Swift](https://img.shields.io/badge/Swift-5.9+-FA7343?style=flat&logo=swift&logoColor=white)](https://swift.org)
-[![Platform](https://img.shields.io/badge/Platform-iOS%20%7C%20macOS-blue?style=flat)](https://developer.apple.com)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+This repository contains **sanitized integration test cases** demonstrating my design patterns and approach for testing Voice Assistant on Apple platforms. 
 
-A lightweight, fluent integration testing architecture for Apple platform apps. This project demonstrates clean patterns for testing voice assistant queries, media playback, localized strings, and calendar event flows using **XCTest** with strong **test isolation** and **deterministic state management**.
+Because the original codebases are proprietary, internal dependencies, frameworks, and data sources have been abstracted into generic interfaces.
 
 ---
 
-## ✨ Key Features & Architecture Highlights
+## 🛠️ Testing Philosophy & Key Patterns
 
-- **Fluent Test Runner Pattern:** Abstracts complex UI and voice interaction assertions into highly readable, chainable methods (`AssistantTestRunner`).
-- **Test Environment Isolation:** Leverages `addTeardownBlock` and isolated mock data stores (`MockCalendarStore`) to eliminate side effects and guarantee test independence.
-- **Deterministic Time Offset Strategies:** Handles time-sensitive calendar assertions by seeding future events with explicit time offsets to prevent flakiness in edge-case runs.
-- **Dynamic Precondition Handling:** Integrates `XCTSkipIf` guards to gracefully skip tests when prerequisites (such as active subscriptions) are absent in the CI environment.
-- **Localization-Aware Assertions:** Built-in pattern to dynamically resolve and verify localized string tables across multiple locales.
+These examples highlight three core principles I apply when writing automated test suites for voice-driven systems:
 
----
-
-## 🛠 Tech Stack
-
-- **Language:** Swift 5.9+
-- **Frameworks:** XCTest, Foundation
-- **Design Patterns:** Builder Pattern / Fluent Interface, Mock Repository, Teardown Isolation
+1. **Fluent Test Runner Pattern (`AssistantTestRunner`)**
+   - Abstracts complex voice interaction, UI snippet assertions, and playback checks into chainable, declarative calls for maximum readability and ease of maintenance.
+2. **Guaranteed Test Isolation & Teardown**
+   - Uses `addTeardownBlock` and isolated mock data stores (`MockCalendarStore`) to reset application state automatically after execution, eliminating flaky test cascading across CI pipelines.
+3. **Deterministic State & Environment Guards**
+   - **Time Offsets:** Seeds calendar events at explicit future times (`+5 hours`) to avoid overlapping edge-case failures during test execution.
+   - **CI Guards (`XCTSkipIf`):** Gracefully skips execution when required environmental preconditions (such as active subscriptions) are absent in CI sandbox runs.
 
 ---
 
-## 💻 Code Examples
+## 💻 Test Suite Overview (`AssistantTests.swift`)
 
-### 1. Calendar Voice Query Test with Teardown Isolation
-Demonstrates deterministic event seeding (`+5 hours`), automatic data teardown, and UI snippet assertions:
+The suite covers two distinct real-world voice assistant integration workflows:
 
-```swift
-func test_query_upcoming_calendar_event() throws {
-    // 1. Prepare localized fixtures
-    let eventTitle = Localizer.get("CALENDAR_EVENT_OPTOMETRIST", table: "Calendar")
-    let voiceQuery = Localizer.get("QUERY_NEXT_OPTOMETRIST_APPOINTMENT", table: "Calendar")
+* **Case 1: Calendar Query & UI Snippet Verification (`test_query_upcoming_calendar_event`)**
+  - Tests seeding dynamic calendar data, issuing a localized voice query, and verifying that the resulting UI snippet accurately reflects the event.
+* **Case 2: Media Playback Automation (`test_playback_with_voice_command`)**
+  - Tests triggering media playback via voice command, handling localized search arguments, and verifying player state while ensuring subscription preconditions are met.
 
-    // 2. Setup isolated test environment
-    if MockCalendarStore.allCalendars().isEmpty {
-        MockCalendarStore.addDefaultCalendar()
-    }
-    MockCalendarStore.deleteAllEvents()
+---
 
-    // Clean up test data after execution to guarantee test isolation
-    addTeardownBlock {
-        MockCalendarStore.deleteAllEvents()
-    }
+## 🧰 Tech Stack & Concepts
 
-    // 3. Seed test data deterministically (+5 hours out to avoid overlapping active events)
-    let startDate = Date().addingTimeInterval(5 * 3600)
-    let mockEvent = MockCalendarEvent(
-        title: eventTitle,
-        startDate: startDate,
-        durationMinutes: 60
-    )
-    let createdEvent = MockCalendarStore.add(event: mockEvent)
-    XCTAssertNotNil(createdEvent, "Failed to seed calendar event: \(eventTitle)")
-
-    // 4. Execute voice input flow & assert UI snippet response via Fluent API
-    AssistantTestRunner(self)
-        .sendVoiceQuery(voiceQuery, origin: .homeButton)
-        .assertUISnippetContains(elements: [eventTitle])
-        .finish()
-}
+- **Language:** Swift 5+
+- **Framework:** XCTest
+- **Patterns:** Builder / Fluent API, Mock Repositories, Environment Guards, Localization Resolution
