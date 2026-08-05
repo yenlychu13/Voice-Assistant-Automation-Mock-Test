@@ -22,7 +22,7 @@ These examples highlight four core principles I apply when writing automated int
 
 ---
 
-## 💻 Test Suite Overview (`AssistantTests.swift`)
+## 💻 Test Suite Overview (`VoiceAssistantTests.swift`)
 
 The suite covers three real-world voice assistant integration workflows:
 
