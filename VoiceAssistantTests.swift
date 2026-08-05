@@ -55,4 +55,26 @@ final class AssistantTests: XCTestCase {
             .assertCurrentArtist(contains: artistName)
             .finish()
     }
+
+    // MARK: - Test 3: System Settings & Hardware Controls
+    func test_set_system_volume_via_voice() throws {
+        // 1. Set baseline state & record initial hardware volume level
+        MockDeviceHardware.shared.setSystemVolume(toLevel: 25)
+        let initialVolume = MockDeviceHardware.shared.currentSystemVolume
+
+        // 2. Resolve localized voice command with dynamic integer arguments
+        let voiceCommand = Localizer.format("SET_VOLUME_TO_PERCENT", table: "Settings", args: 80)
+
+        // 3. Execute voice command flow
+        AssistantTestRunner(self)
+            .sendVoiceCommand(voiceCommand, origin: .homeButton)
+            .finish()
+
+        // 4. Verify system hardware state changed as expected
+        let currentVolume = MockDeviceHardware.shared.currentSystemVolume
+        XCTAssertEqual(
+            currentVolume, 80,
+            "System volume failed to update to 80%. Initial: \(initialVolume), Current: \(currentVolume)"
+        )
+    }
 }
